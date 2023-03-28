@@ -1,20 +1,34 @@
 #!/bin/sh
 
 if [ $# != 1 ]; then
-  echo " $# Es necesario pasar un argumento especificando el numero
-  de puerto con el que se accederá a zammad"
+  echo "Es necesario pasar un argumento especificando el numero
+de puerto con el que se accederá a zammad"
   exit 1
 fi
 
-if  which "microk8s" >/dev/null ; then
-echo "El programa \"microk8s\" está instalado."
-else
-echo "No está instalado \"microk8s\"  se procederá con su instalación."
+if [ $1 -lt 30000 ] ;then
+  echo "El puerto debe ser mayor o igual a 30,000"
+  exit 1
+fi
 
-snap install microk8s --classic --channel=1.26
-usermod -a -G microk8s $USER
-chown -f -R $USER ~/.kube
-microk8s status --wait-ready
+if  which "microk8s" > /dev/null ; then
+  echo "El programa \"microk8s\" está instalado."
+  
+  #verificar si el usuario se encuentra en el grupo microk8s
+  groups | grep microk8s > /dev/null
+  if [  $? -ne 0 ]; then
+    echo "el usuario debe pertenecer al grupo microk8s, agreguelo o ejecute con sudo"
+    exit 1
+  fi 
+
+
+else
+  echo "No está instalado \"microk8s\"  se procederá con su instalación."
+
+  snap install microk8s --classic --channel=1.26
+  usermod -a -G microk8s $USER
+  chown -f -R $USER ~/.kube
+  microk8s status --wait-ready
 
 fi
 
@@ -58,8 +72,10 @@ spec:
     app.kubernetes.io/instance: zammad
     app.kubernetes.io/name: zammad
   sessionAffinity: None
-  type: NodePort" > svc-zammad-overide.yaml
+  type: NodePort" > svc-zammad-override.yaml
 
-microk8s kubectl apply -f svc-zammad-overide.yaml
+microk8s kubectl apply -f svc-zammad-override.yaml
+
+rm svc-zammad-override.yaml
 
 echo "/n/n zammad running in port $1"
