@@ -2,6 +2,15 @@
 
 This is a script to deploy zammad using microk8s. You must have to give as argument the port that you want to expose for the application, and a second argument to indicate the port for pgAdmin
 
+# pgAdmin
+
+To connect with zammad database use the following data
+
+Postgres port: 5432
+database name: zammad_production
+username: zammad
+password: zammad
+
 # Add new ticket state
 
 
